@@ -1,28 +1,29 @@
-document.addEventListener("DOMContentLoaded", function (){
-    const apikey="1515b216-a8cf-445f-805c-c7767aedad80";
+document.addEventListener("DOMContentLoaded", function () {
+    const apikey = "65403303-69fd-435b-81b6-51f669e19307";
     const apihost = 'https://todo-api.coderslab.pl';
 
-    function timerender(time){
-        const hours=Math.floor(time/60);
-        const minutes=time%60;
-        return `${hours>0 ? `${hours}h` : ''}${minutes > 0 ? ` ${minutes}m` : ''}`;
+    function timerender(time) {
+        const hours = Math.floor(time / 60);
+        const minutes = time % 60;
+        return `${hours > 0 ? `${hours}h` : ''}${minutes > 0 ? ` ${minutes}m` : ''}`;
     }
 
     function apiListTasks() {
         return fetch(
             apihost + '/api/tasks',
             {
-                headers: { Authorization: apikey }
+                headers: {Authorization: apikey}
             }
         ).then(
-            function(resp) {
-                if(!resp.ok) {
+            function (resp) {
+                if (!resp.ok) {
                     alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
                 }
                 return resp.json();
             }
         )
     }
+
     function renderTask(taskId, title, description, status) {
         const section = document.createElement("section");
         section.className = 'card mt-5 shadow-sm';
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function (){
         headerLeftDiv.appendChild(h6);
         const headerRightDiv = document.createElement('div');
         headerDiv.appendChild(headerRightDiv);
-        if(status === 'open') {
+        if (status === 'open') {
             const finishButton = document.createElement('button');
             finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
             finishButton.innerText = 'Finish';
@@ -51,40 +52,41 @@ document.addEventListener("DOMContentLoaded", function (){
         deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
         deleteButton.innerText = 'Delete';
         headerRightDiv.appendChild(deleteButton);
-        const ul=document.createElement("ul");
-        ul.className="list-group list-group-flush";
+
+        const ul = document.createElement("ul");
+        ul.className = "list-group list-group-flush";
         section.appendChild(ul);
 
         apiListOperationsForTask(taskId).then(
-            function (response){
+            function (response) {
                 response.data.forEach(
-                    function (operation){
+                    function (operation) {
                         renderOperation(ul, operation.id, status, operation.description, operation.timeSpent)
                     }
-                )
+                );
             }
-        )
+        );
 
-        const divBody=document.createElement("div");
-        divBody.className="card-body";
+        const divBody = document.createElement("div");
+        divBody.className = "card-body";
         section.appendChild(divBody);
-        const form=document.createElement("form");
+        const form = document.createElement("form");
         divBody.appendChild(form);
-        const divInput=document.createElement("div");
-        divInput.className="input-group";
+        const divInput = document.createElement("div");
+        divInput.className = "input-group";
         form.appendChild(divInput);
-        const input2=document.createElement("input");
-        input2.type="text";
-        input2.placeholder="Operation description";
-        input2.className="form-control";
-        input2.minLength="5";
+        const input2 = document.createElement("input");
+        input2.type = "text";
+        input2.placeholder = "Operation description";
+        input2.className = "form-control";
+        input2.minLength = "5";
         divInput.appendChild(input2);
-        const divInputGroup=document.createElement("div");
-        divInputGroup.className="input-group-append";
+        const divInputGroup = document.createElement("div");
+        divInputGroup.className = "input-group-append";
         divInput.appendChild(divInputGroup);
-        const buttonInput=document.createElement("button");
-        buttonInput.className="btn btn-info";
-        buttonInput.innerText="Add";
+        const buttonInput = document.createElement("button");
+        buttonInput.className = "btn btn-info";
+        buttonInput.innerText = "Add";
         divInputGroup.appendChild(buttonInput);
 
     }
@@ -93,11 +95,11 @@ document.addEventListener("DOMContentLoaded", function (){
         return fetch(
             apihost + `/api/tasks/` + taskId + `/operations`,
             {
-                headers: { Authorization: apikey }
+                headers: {Authorization: apikey}
             }
         ).then(
-            function(resp) {
-                if(!resp.ok) {
+            function (resp) {
+                if (!resp.ok) {
                     alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
                 }
                 return resp.json();
@@ -141,15 +143,47 @@ document.addEventListener("DOMContentLoaded", function (){
 
 
         if (status === "open") {
-//
+
         }
     }
 
-        apiListTasks().then(function (response){
-            response.data.forEach(function (task){
-                renderTask(task.id, task.title, task.description, task.status);
+    apiListTasks().then(function (response) {
+        response.data.forEach(function (task) {
+            renderTask(task.id, task.title, task.description, task.status);
 
-            });
         });
-
     });
+
+    function apiCreateTask(title, description) {
+        return fetch(
+            apihost + '/api/tasks',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': apikey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({title: title, description: description, status: 'open'})
+            }
+        ).then(
+            function (resp) {
+                if (!resp.ok) {
+                    alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        )
+    }
+
+
+    document.querySelector("form").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        const taskTitle = ev.currentTarget.elements.title.value;
+        const taskDescription = ev.currentTarget.elements.description.value;
+        apiCreateTask(taskTitle, taskDescription).then(function (response) {
+            renderTask(response.data.id, response.data.title, response.data.description, response.data.status)
+        })
+    });
+});
+
+
