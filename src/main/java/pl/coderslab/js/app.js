@@ -28,20 +28,26 @@ document.addEventListener("DOMContentLoaded", function () {
         const section = document.createElement("section");
         section.className = 'card mt-5 shadow-sm';
         document.querySelector('main').appendChild(section);
+
         const headerDiv = document.createElement('div');
         headerDiv.className = 'card-header d-flex justify-content-between align-items-center';
         section.appendChild(headerDiv);
+
         const headerLeftDiv = document.createElement('div');
         headerDiv.appendChild(headerLeftDiv);
+
         const h5 = document.createElement('h5');
         h5.innerText = title;
         headerLeftDiv.appendChild(h5);
+
         const h6 = document.createElement('h6');
         h6.className = 'card-subtitle text-muted';
         h6.innerText = description;
         headerLeftDiv.appendChild(h6);
+
         const headerRightDiv = document.createElement('div');
         headerDiv.appendChild(headerRightDiv);
+
         if (status === 'open') {
             const finishButton = document.createElement('button');
             finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
@@ -52,6 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
         deleteButton.innerText = 'Delete';
         headerRightDiv.appendChild(deleteButton);
+
+        deleteButton.addEventListener("click", function (){
+            apiDeleteTask(taskId).then( function (response){
+                    section.parentElement.removeChild(section);
+                }
+            )
+        })
 
         const ul = document.createElement("ul");
         ul.className = "list-group list-group-flush";
@@ -70,20 +83,25 @@ document.addEventListener("DOMContentLoaded", function () {
         const divBody = document.createElement("div");
         divBody.className = "card-body";
         section.appendChild(divBody);
+
         const form = document.createElement("form");
         divBody.appendChild(form);
+
         const divInput = document.createElement("div");
         divInput.className = "input-group";
         form.appendChild(divInput);
+
         const input2 = document.createElement("input");
         input2.type = "text";
         input2.placeholder = "Operation description";
         input2.className = "form-control";
         input2.minLength = "5";
         divInput.appendChild(input2);
+
         const divInputGroup = document.createElement("div");
         divInputGroup.className = "input-group-append";
         divInput.appendChild(divInputGroup);
+
         const buttonInput = document.createElement("button");
         buttonInput.className = "btn btn-info";
         buttonInput.innerText = "Add";
@@ -184,6 +202,24 @@ document.addEventListener("DOMContentLoaded", function () {
             renderTask(response.data.id, response.data.title, response.data.description, response.data.status)
         })
     });
+    function apiDeleteTask(taskId){
+        return fetch(
+            apihost + '/api/tasks/' + taskId,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': apikey,
+                },
+            }
+        ).then(
+            function(resp) {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        )
+    }
 });
 
 
