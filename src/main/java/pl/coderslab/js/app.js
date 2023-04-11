@@ -80,34 +80,52 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         );
 
-        const divBody = document.createElement("div");
-        divBody.className = "card-body";
-        section.appendChild(divBody);
+        if (status === 'open') {
 
-        const form = document.createElement("form");
-        divBody.appendChild(form);
+            const addOperationDiv = document.createElement('div');
+            addOperationDiv.className = 'card-body js-task-open-only';
+            section.appendChild(addOperationDiv);
 
-        const divInput = document.createElement("div");
-        divInput.className = "input-group";
-        form.appendChild(divInput);
+            const form = document.createElement('form');
+            addOperationDiv.appendChild(form);
 
-        const input2 = document.createElement("input");
-        input2.type = "text";
-        input2.placeholder = "Operation description";
-        input2.className = "form-control";
-        input2.minLength = "5";
-        divInput.appendChild(input2);
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            form.appendChild(inputGroup);
 
-        const divInputGroup = document.createElement("div");
-        divInputGroup.className = "input-group-append";
-        divInput.appendChild(divInputGroup);
+            const descriptionInput = document.createElement('input');
+            descriptionInput.setAttribute('type', 'text');
+            descriptionInput.setAttribute('placeholder', 'Operation description');
+            descriptionInput.setAttribute('minlength', '5');
+            descriptionInput.className = 'form-control';
+            inputGroup.appendChild(descriptionInput);
 
-        const buttonInput = document.createElement("button");
-        buttonInput.className = "btn btn-info";
-        buttonInput.innerText = "Add";
-        divInputGroup.appendChild(buttonInput);
+            const inputGroupAppend = document.createElement('div');
+            inputGroupAppend.className = 'input-group-append';
+            inputGroup.appendChild(inputGroupAppend);
 
+            const addButton = document.createElement('button');
+            addButton.className = 'btn btn-info';
+            addButton.innerText = 'Add';
+            inputGroupAppend.appendChild(addButton);
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                apiCreateOperationForTask(taskId, descriptionInput.value).then(
+                    function(response) {
+                        renderOperation(
+                            ul,
+                            status,
+                            response.data.id,
+                            response.data.description,
+                            response.data.timeSpent
+                        );
+                    }
+                )
+            });
+        }
     }
+
 
     function apiListOperationsForTask(taskId) {
         return fetch(
@@ -215,6 +233,27 @@ document.addEventListener("DOMContentLoaded", function () {
             function(resp) {
                 if(!resp.ok) {
                     alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        )
+    }
+
+    function apiCreateOperationForTask(taskId, description){
+        return fetch(
+            apihost + '/api/tasks/' + taskId + '/operations',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': apikey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({description: description, timeSpent: 0})
+            }
+        ).then(
+            function(resp) {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd w dodawaniu operacji! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
                 }
                 return resp.json();
             }
