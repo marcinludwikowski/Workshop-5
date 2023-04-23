@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderTask(taskId, title, description, status) {
-        const section = document.createElement("section");
+        const section = document.createElement('section');
         section.className = 'card mt-5 shadow-sm';
         document.querySelector('main').appendChild(section);
 
@@ -48,40 +48,42 @@ document.addEventListener("DOMContentLoaded", function () {
         const headerRightDiv = document.createElement('div');
         headerDiv.appendChild(headerRightDiv);
 
-        if (status === 'open') {
+        if(status == 'open') {
             const finishButton = document.createElement('button');
             finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
             finishButton.innerText = 'Finish';
             headerRightDiv.appendChild(finishButton);
+            finishButton.addEventListener('click', function() {
+                apiUpdateTask(taskId, title, description, 'closed');
+                section.querySelectorAll('.js-task-open-only').forEach(
+                    function(element) { element.parentElement.removeChild(element); }
+                );
+            });
         }
+
         const deleteButton = document.createElement('button');
         deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
         deleteButton.innerText = 'Delete';
         headerRightDiv.appendChild(deleteButton);
-
-        deleteButton.addEventListener("click", function (){
-            apiDeleteTask(taskId).then( function (response){
-                    section.parentElement.removeChild(section);
-                }
-            );
+        deleteButton.addEventListener('click', function() {
+            apiDeleteTask(taskId).then(function() { section.parentElement.removeChild(section); });
         });
 
-        const ul = document.createElement("ul");
-        ul.className = "list-group list-group-flush";
+        const ul = document.createElement('ul');
+        ul.className = 'list-group list-group-flush';
         section.appendChild(ul);
 
         apiListOperationsForTask(taskId).then(
-            function (response) {
+            function(response) {
                 response.data.forEach(
-                    function (operation) {
-                        renderOperation(ul, operation.id, status, operation.description, operation.timeSpent)
+                    function(operation) {
+                        renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
                     }
                 )
             }
         )
 
-        if (status === 'open') {
-
+        if(status == 'open') {
             const addOperationDiv = document.createElement('div');
             addOperationDiv.className = 'card-body js-task-open-only';
             section.appendChild(addOperationDiv);
@@ -278,6 +280,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 return resp.json();
             }
         )
+    }
+
+    function apiUpdateTask(taskId, title, description, status) {
+        return fetch(
+            apihost + '/api/tasks/' + taskId,
+            {
+                headers: { Authorization: apikey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, description: description, status: status }),
+                method: 'PUT'
+            }
+        ).then(
+            function (resp) {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        );
     }
 });
 
