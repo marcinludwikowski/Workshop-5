@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         )
 
-        if(status == 'open') {
+        if(status === 'open') {
             const addOperationDiv = document.createElement('div');
             addOperationDiv.className = 'card-body js-task-open-only';
             section.appendChild(addOperationDiv);
@@ -170,10 +170,28 @@ document.addEventListener("DOMContentLoaded", function () {
             add15minButton.innerText = '+15m';
             controlDiv.appendChild(add15minButton);
 
+            add15minButton.addEventListener('click', function() {
+                apiUpdateOperation(operationId, operationDescription, timeSpent + 15).then(
+                    function(response) {
+                        time.innerText = formatTime(response.data.timeSpent);
+                        timeSpent = response.data.timeSpent;
+                    }
+                );
+            });
+
             const add1hButton = document.createElement('button');
             add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
             add1hButton.innerText = '+1h';
             controlDiv.appendChild(add1hButton);
+
+            add1hButton.addEventListener('click', function() {
+                apiUpdateOperation(operationId, operationDescription, timeSpent + 60).then(
+                    function(response) {
+                        time.innerText = formatTime(response.data.timeSpent);
+                        timeSpent = response.data.timeSpent;
+                    }
+                );
+            });
 
             const deleteButton = document.createElement('button');
             deleteButton.className = 'btn btn-outline-danger btn-sm';
@@ -299,6 +317,33 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         );
     }
+
+    function apiUpdateOperation(operationId, description, timeSpent) {
+        return fetch(
+            apihost + '/api/operations/' + operationId,
+            {
+                headers: { Authorization: apikey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: description, timeSpent: timeSpent }),
+                method: 'PUT'
+            }
+        ).then(
+            function (resp) {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        );
+    }
+function formatTime(total) {
+    const hours = Math.floor(total / 60);
+    const minutes = total % 60;
+    if(hours > 0) {
+        return hours + 'h ' + minutes + 'm';
+    } else {
+        return minutes + 'm';
+    }
+}
 });
 
 
