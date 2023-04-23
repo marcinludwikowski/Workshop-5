@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
             apiDeleteTask(taskId).then( function (response){
                     section.parentElement.removeChild(section);
                 }
-            )
-        })
+            );
+        });
 
         const ul = document.createElement("ul");
         ul.className = "list-group list-group-flush";
@@ -76,9 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     function (operation) {
                         renderOperation(ul, operation.id, status, operation.description, operation.timeSpent)
                     }
-                );
+                )
             }
-        );
+        )
 
         if (status === 'open') {
 
@@ -144,11 +144,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    function renderOperation(operationsList, status, operationId, operationDescription, timeSpent) {
+    function renderOperation(ul, status, operationId, operationDescription, timeSpent) {
         const li = document.createElement('li');
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        operationsList.appendChild(li);
-
+        ul.appendChild(li);
 
         const descriptionDiv = document.createElement('div');
         descriptionDiv.innerText = operationDescription;
@@ -156,30 +155,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const time = document.createElement('span');
         time.className = 'badge badge-success badge-pill ml-2';
-        time.innerText = timerender(timeSpent);
+        time.innerText = formatTime(timeSpent);
         descriptionDiv.appendChild(time);
 
-        const buttonsDiv = document.createElement("div");
-        li.appendChild(buttonsDiv);
+        if(status == "open") {
+            const controlDiv = document.createElement('div');
+            controlDiv.className = 'js-task-open-only';
+            li.appendChild(controlDiv);
 
-        const button15m = document.createElement("button");
-        button15m.className = "btn btn-outline-success btn-sm mr-2";
-        button15m.innerText = "+15m";
-        buttonsDiv.appendChild(button15m);
+            const add15minButton = document.createElement('button');
+            add15minButton.className = 'btn btn-outline-success btn-sm mr-2';
+            add15minButton.innerText = '+15m';
+            controlDiv.appendChild(add15minButton);
 
-        const button1h = document.createElement("button");
-        button1h.className = "btn btn-outline-success btn-sm mr-2";
-        button1h.innerText = "+1h";
-        buttonsDiv.appendChild(button1h);
+            const add1hButton = document.createElement('button');
+            add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
+            add1hButton.innerText = '+1h';
+            controlDiv.appendChild(add1hButton);
 
-        const buttonDel = document.createElement("button")
-        buttonDel.className = "btn btn-outline-danger btn-sm";
-        buttonDel.innerText = "Delete";
-        buttonsDiv.appendChild(buttonDel);
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-outline-danger btn-sm';
+            deleteButton.innerText = 'Delete';
+            controlDiv.appendChild(deleteButton);
 
-
-        if (status === "open") {
-
+            deleteButton.addEventListener('click', function() {
+                apiDeleteOperation(operationId).then(
+                    function() { li.parentElement.removeChild(li); }
+                );
+            });
         }
     }
 
@@ -259,6 +262,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         )
     }
+
+    function apiDeleteOperation(operationId) {
+        return fetch(
+            apihost + '/api/operations/' + operationId,
+            {
+                headers: { Authorization: apikey },
+                method: 'DELETE'
+            }
+        ).then(
+            function (resp) {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+                }
+                return resp.json();
+            }
+        )
+    }
 });
+
+
 
 
